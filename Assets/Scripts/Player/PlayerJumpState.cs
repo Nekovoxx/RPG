@@ -21,6 +21,13 @@ public class PlayerJumpState : PlayerState
     public override void Update()
     {
         base.Update();
+
+        if (Input.GetKeyDown(KeyCode.Space) && player.CanDoubleJump())
+        {
+            stateMachine.ChangeState(player.doubleJumpState);
+            return;
+        }
+
         if (rb.velocity.y < 0)
             stateMachine.ChangeState(player.airState);
     }

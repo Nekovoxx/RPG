@@ -5,37 +5,47 @@ using UnityEngine;
 public class Player : Entity
 {
 
-    [Header("π•ª˜œÍ«È")]
+    [Header("ÊîªÂáªËØ¶ÊÉÖ")]
     public Vector2[] attackMovement;
     public float counterAttackDuration = 0.2f;
 
     public bool isBusy { get;  set; }
 
 
-    [Header("“∆∂Ø–≈œ¢")]
+    [Header("ÁßªÂä®‰ø°ÊÅØ")]
     public float moveSpeed = 12f;
     public float jumpForce;
     public float swordReturnImpact;
     private float defaultMoveSpeed;
     private float defaultJumpForce;
 
-    [Header("≥Â¥Ã–≈œ¢")]
+    [Header("‰∫åÊÆµË∑≥‰ø°ÊÅØ")]
+    public float doubleJumpForce;
+    [SerializeField] private int extraJumpCount = 1;
+    private int availableExtraJumps;
+
+    [Header("ÂÜ≤Âà∫‰ø°ÊÅØ")]
     public float dashSpeed;
     public float dashDuration;
     private float defaultDashSpeed;
     public float dashDir { get; private set; }
+    private Coroutine queuedDashCoroutine;
+    private float queuedDashDir;
+    private int lastPreciseDodgeFrame = -1000;
+    private float lastShiftPressedTime = -999f;
 
     public SkillManager skill { get; private set; }
     public GameObject sword;
     public bool canHeal;
 
 
-    //◊¥Ã¨ª˙…Ë÷√
+    //Áä∂ÊÄÅÊú∫ËÆæÁΩÆ
     #region States
     public PlayerStateMachine stateMachine { get; private set; }
     public PlayerIdleState idleState { get; private set; }
     public PlayerMoveState moveState { get; private set; }
     public PlayerJumpState jumpState { get; private set; }
+    public PlayerDoubleJumpState doubleJumpState { get; private set; }
     public PlayerAirState airState { get; private set; }
     public PlayerWallSlideState wallSlide { get; private set; }
     public PlayerWallJumpState wallJump { get; private set; }
@@ -44,6 +54,8 @@ public class Player : Entity
     public PlayerCounterAttackState counterAttack { get; private set; }
     public PlayerAimSwordState aimSword { get; private set; }
     public PlayerCatchSwordState catchSword { get; private set; }
+    public PlayerPreciseDodgeState preciseDodgeState { get; private set; }
+    public PlayerPreciseDodgeAttackState preciseDodgeAttackState { get; private set; }
     public PlayerDeadState deadState { get; private set; }
     public PlayerHealingState healState { get; private set; }
     #endregion
@@ -56,6 +68,7 @@ public class Player : Entity
         idleState = new PlayerIdleState(this, stateMachine, "Idle");
         moveState = new PlayerMoveState(this, stateMachine, "Move");
         jumpState = new PlayerJumpState(this, stateMachine, "Jump");
+        doubleJumpState = new PlayerDoubleJumpState(this, stateMachine, "DoubleJump");
         airState = new PlayerAirState(this, stateMachine, "Jump");
         dashState = new PlayerDashState(this, stateMachine, "Dash");
         wallSlide = new PlayerWallSlideState(this, stateMachine, "WallSlide");
@@ -66,6 +79,8 @@ public class Player : Entity
 
         aimSword = new PlayerAimSwordState(this, stateMachine, "AimSword");
         catchSword = new PlayerCatchSwordState(this, stateMachine, "CatchSword");
+        preciseDodgeState = new PlayerPreciseDodgeState(this, stateMachine, "PreciseDodge");
+        preciseDodgeAttackState = new PlayerPreciseDodgeAttackState(this, stateMachine, "PreciseDodgeAttack");
         deadState = new PlayerDeadState(this, stateMachine, "Die");
         healState = new PlayerHealingState(this, stateMachine, "Healing");
     }
@@ -75,6 +90,7 @@ public class Player : Entity
 
         base.Start();
         skill = SkillManager.instance;
+        ResetExtraJumps();
 
         stateMachine.Initialize(idleState);
 
@@ -88,8 +104,10 @@ public class Player : Entity
     protected override void Update()
     {
         base.Update();
+        RecordShiftInput();
         stateMachine.currentState.Update();
 
+        CheckForPreciseDodgeFollowUpInput();
 
         CheakForDashInput();
     }
@@ -124,6 +142,24 @@ public class Player : Entity
         Destroy(sword);
     }
 
+    public void ResetExtraJumps()
+    {
+        availableExtraJumps = extraJumpCount;
+    }
+
+    public bool CanDoubleJump() => availableExtraJumps > 0;
+
+    public void ConsumeExtraJump()
+    {
+        availableExtraJumps = Mathf.Max(availableExtraJumps - 1, 0);
+    }
+
+    public float GetDoubleJumpForce()
+    {
+        return doubleJumpForce > 0 ? doubleJumpForce : jumpForce;
+    }
+
+
     public IEnumerator BusyFor(float _seconds)
     {
         isBusy = true;
@@ -137,6 +173,59 @@ public class Player : Entity
 
     public void AnimationTrigger() => stateMachine.currentState.AnimationFinishTrigger();
 
+    public void InterruptPreciseDodgeFollowUp()
+    {
+        if (stateMachine.currentState != preciseDodgeAttackState)
+            return;
+
+        skill?.preciseDodge?.CancelFollowUpAttack();
+
+        if (IsGroundDetected())
+            stateMachine.ChangeState(idleState);
+        else
+            stateMachine.ChangeState(airState);
+    }
+
+    public bool TryStartPreciseDodge(Transform attacker)
+    {
+        if (skill == null || skill.preciseDodge == null)
+            return false;
+
+        bool dodged = skill.preciseDodge.TryStartFromAttackFrame(attacker);
+
+        if (dodged)
+            MarkPreciseDodgeStarted();
+
+        return dodged;
+    }
+
+    public void MarkPreciseDodgeStarted()
+    {
+        lastPreciseDodgeFrame = Time.frameCount;
+    }
+
+    public bool HasBufferedPreciseDodgeInput(float bufferDuration)
+    {
+        return ShiftWasPressedThisFrame() || Time.time <= lastShiftPressedTime + bufferDuration;
+    }
+
+    public void ConsumePreciseDodgeInput()
+    {
+        lastShiftPressedTime = -999f;
+    }
+
+    private void RecordShiftInput()
+    {
+        if (ShiftWasPressedThisFrame())
+            lastShiftPressedTime = Time.time;
+    }
+
+    private void CheckForPreciseDodgeFollowUpInput()
+    {
+        if (Input.GetKeyDown(KeyCode.R))
+            skill?.preciseDodge?.TryUseFollowUpAttack();
+    }
+
     private void CheakForDashInput()
     {
 
@@ -145,20 +234,51 @@ public class Player : Entity
             return;
 
 
+        if (!ShiftWasPressedThisFrame())
+            return;
 
+        if (lastPreciseDodgeFrame == Time.frameCount)
+            return;
 
-        if (Input.GetKeyDown(KeyCode.LeftShift) && SkillManager.instance.dash.CanUseSkill())
+        if (SkillManager.instance.dash == null || !SkillManager.instance.dash.IsReady())
+            return;
+
+        queuedDashDir = Input.GetAxisRaw("Horizontal");
+
+        if (queuedDashDir == 0)
+            queuedDashDir = facingDir;
+
+        if (queuedDashCoroutine != null)
+            StopCoroutine(queuedDashCoroutine);
+
+        queuedDashCoroutine = StartCoroutine(UseDashAfterPreciseDodgeCheck(Time.frameCount, queuedDashDir));
+    }
+
+    private IEnumerator UseDashAfterPreciseDodgeCheck(int inputFrame, float requestedDashDir)
+    {
+        yield return null;
+
+        queuedDashCoroutine = null;
+
+        if (lastPreciseDodgeFrame >= inputFrame)
+            yield break;
+
+        if (skill != null && skill.preciseDodge != null && skill.preciseDodge.IsDodging)
+            yield break;
+
+        if (IsWallDetected() && !IsGroundDetected())
+            yield break;
+
+        if (SkillManager.instance.dash != null && SkillManager.instance.dash.CanUseSkill())
         {
-
-
-            dashDir = Input.GetAxisRaw("Horizontal");
-
-            if (dashDir == 0)
-                dashDir = facingDir;
-
+            dashDir = requestedDashDir;
             stateMachine.ChangeState(dashState);
-
         }
+    }
+
+    private bool ShiftWasPressedThisFrame()
+    {
+        return Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift);
     }
     public void HealEvent()
     {
@@ -166,7 +286,7 @@ public class Player : Entity
 
         Inventory.instance.UesFlask();
 
-        canHeal = false; // ∑¿÷π÷ÿ∏¥¥•∑¢
+        canHeal = false; // Èò≤Ê≠¢ÈáçÂ§çËß¶Âèë
     }
     public override void Die()
     {

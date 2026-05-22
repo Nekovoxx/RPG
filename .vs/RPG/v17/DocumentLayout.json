@@ -3,12 +3,24 @@
   "WorkspaceRootPath": "F:\\unity\\RPG\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{0BE8E511-D506-A1D0-E67D-923A5ED26D39}|Assembly-CSharp.csproj|f:\\unity\\rpg\\assets\\scripts\\skills\\cloneskill_controller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{0BE8E511-D506-A1D0-E67D-923A5ED26D39}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\skills\\cloneskill_controller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|f:\\unity\\rpg\\assets\\editor\\precisedodgefollowupsetup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:assets\\editor\\precisedodgefollowupsetup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0BE8E511-D506-A1D0-E67D-923A5ED26D39}|Assembly-CSharp.csproj|f:\\unity\\rpg\\assets\\scripts\\skills\\blackhole_skill_controller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{0BE8E511-D506-A1D0-E67D-923A5ED26D39}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\skills\\blackhole_skill_controller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0BE8E511-D506-A1D0-E67D-923A5ED26D39}|Assembly-CSharp.csproj|F:\\unity\\RPG\\assets\\scripts\\player\\player.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0BE8E511-D506-A1D0-E67D-923A5ED26D39}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\player\\player.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0BE8E511-D506-A1D0-E67D-923A5ED26D39}|Assembly-CSharp.csproj|F:\\unity\\RPG\\assets\\scripts\\player\\playerprecisedodgestate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0BE8E511-D506-A1D0-E67D-923A5ED26D39}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\player\\playerprecisedodgestate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0BE8E511-D506-A1D0-E67D-923A5ED26D39}|Assembly-CSharp.csproj|F:\\unity\\RPG\\assets\\scripts\\skills\\precisedodgescreeneffect.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0BE8E511-D506-A1D0-E67D-923A5ED26D39}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\skills\\precisedodgescreeneffect.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|F:\\unity\\RPG\\Assets\\Scripts\\Skills\\Crystal_Skill.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Assets\\Scripts\\Skills\\Crystal_Skill.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -23,28 +35,62 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "CloneSkill_Controller.cs",
-              "DocumentMoniker": "F:\\unity\\RPG\\Assets\\Scripts\\Skills\\CloneSkill_Controller.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\Skills\\CloneSkill_Controller.cs",
-              "ToolTip": "F:\\unity\\RPG\\Assets\\Scripts\\Skills\\CloneSkill_Controller.cs",
-              "RelativeToolTip": "Assets\\Scripts\\Skills\\CloneSkill_Controller.cs",
-              "ViewState": "AgIAACQAAAAAAAAAAAAYwCgAAAAAAAAAAAAAAA==",
+              "Title": "PreciseDodgeFollowUpSetup.cs",
+              "DocumentMoniker": "F:\\unity\\RPG\\Assets\\Editor\\PreciseDodgeFollowUpSetup.cs",
+              "RelativeDocumentMoniker": "Assets\\Editor\\PreciseDodgeFollowUpSetup.cs",
+              "ToolTip": "F:\\unity\\RPG\\Assets\\Editor\\PreciseDodgeFollowUpSetup.cs",
+              "RelativeToolTip": "Assets\\Editor\\PreciseDodgeFollowUpSetup.cs",
+              "ViewState": "AgIAACIAAAAAAAAAAAAQwEMAAAA6AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-13T16:43:22.131Z",
+              "WhenOpened": "2026-05-21T07:39:22.016Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Blackhole_Skill_Controller.cs",
-              "DocumentMoniker": "F:\\unity\\RPG\\Assets\\Scripts\\Skills\\Blackhole_Skill_Controller.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\Skills\\Blackhole_Skill_Controller.cs",
-              "ToolTip": "F:\\unity\\RPG\\Assets\\Scripts\\Skills\\Blackhole_Skill_Controller.cs",
-              "RelativeToolTip": "Assets\\Scripts\\Skills\\Blackhole_Skill_Controller.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAACIAAAAEAAAAAAAAAA==",
+              "DocumentIndex": 3,
+              "Title": "PreciseDodgeScreenEffect.cs",
+              "DocumentMoniker": "F:\\unity\\RPG\\Assets\\Scripts\\Skills\\PreciseDodgeScreenEffect.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\Skills\\PreciseDodgeScreenEffect.cs",
+              "ToolTip": "F:\\unity\\RPG\\Assets\\Scripts\\Skills\\PreciseDodgeScreenEffect.cs",
+              "RelativeToolTip": "Assets\\Scripts\\Skills\\PreciseDodgeScreenEffect.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-13T01:51:29.787Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-19T18:56:10.803Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Crystal_Skill.cs",
+              "DocumentMoniker": "F:\\unity\\RPG\\Assets\\Scripts\\Skills\\Crystal_Skill.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\Skills\\Crystal_Skill.cs",
+              "ToolTip": "F:\\unity\\RPG\\Assets\\Scripts\\Skills\\Crystal_Skill.cs",
+              "RelativeToolTip": "Assets\\Scripts\\Skills\\Crystal_Skill.cs",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-15T03:55:14.4Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Player.cs",
+              "DocumentMoniker": "F:\\unity\\RPG\\Assets\\Scripts\\Player\\Player.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\Player\\Player.cs",
+              "ToolTip": "F:\\unity\\RPG\\Assets\\Scripts\\Player\\Player.cs",
+              "RelativeToolTip": "Assets\\Scripts\\Player\\Player.cs",
+              "ViewState": "AgIAAE4AAAAAAAAAAABRwFEAAABKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-19T18:56:16.57Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "PlayerPreciseDodgeState.cs",
+              "DocumentMoniker": "F:\\unity\\RPG\\Assets\\Scripts\\Player\\PlayerPreciseDodgeState.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\Player\\PlayerPreciseDodgeState.cs",
+              "ToolTip": "F:\\unity\\RPG\\Assets\\Scripts\\Player\\PlayerPreciseDodgeState.cs",
+              "RelativeToolTip": "Assets\\Scripts\\Player\\PlayerPreciseDodgeState.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAYwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-19T18:56:43.403Z"
             }
           ]
         },

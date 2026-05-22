@@ -1,0 +1,303 @@
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Tilemaps;
+
+[ExecuteAlways]
+[RequireComponent(typeof(Tilemap))]
+public class TilemapSlopeCollider : MonoBehaviour
+{
+    private enum SlopeDirection
+    {
+        None,
+        UpRight,
+        UpLeft
+    }
+
+    [SerializeField] private TileBase[] slopeUpRightTiles;
+    [SerializeField] private TileBase[] slopeUpLeftTiles;
+    [SerializeField] private string[] slopeUpRightTileNames =
+    {
+        "GandalfHardcore Hell Tiles 32x32_26",
+        "GandalfHardcore Hell Tiles 32x32_54"
+    };
+    [SerializeField] private string[] slopeUpLeftTileNames =
+    {
+        "GandalfHardcore Hell Tiles 32x32_27",
+        "GandalfHardcore Hell Tiles 32x32_57"
+    };
+    [SerializeField] private string generatedContainerName = "__GeneratedSlopeColliders";
+    [SerializeField] private bool rebuildInEditMode = true;
+    [SerializeField] private bool watchTilemapChangesInEditMode = true;
+    [SerializeField] private float editModeRebuildInterval = 0.25f;
+
+    private readonly HashSet<TileBase> slopeUpRightSet = new HashSet<TileBase>();
+    private readonly HashSet<TileBase> slopeUpLeftSet = new HashSet<TileBase>();
+    private Tilemap tilemap;
+    private int lastTilemapHash;
+    private bool hasTilemapHash;
+
+#if UNITY_EDITOR
+    private double nextEditModeCheckTime;
+#endif
+
+    private void OnEnable()
+    {
+        if (Application.isPlaying || rebuildInEditMode)
+            Rebuild();
+    }
+
+    private void Start()
+    {
+        Rebuild();
+    }
+
+    private void OnValidate()
+    {
+        RebuildTileSets();
+
+#if UNITY_EDITOR
+        if (!Application.isPlaying && rebuildInEditMode)
+        {
+            UnityEditor.EditorApplication.delayCall -= RebuildInEditor;
+            UnityEditor.EditorApplication.delayCall += RebuildInEditor;
+        }
+#endif
+    }
+
+    private void Update()
+    {
+#if UNITY_EDITOR
+        if (Application.isPlaying ||
+            !rebuildInEditMode ||
+            !watchTilemapChangesInEditMode ||
+            UnityEditor.EditorApplication.timeSinceStartup < nextEditModeCheckTime)
+            return;
+
+        nextEditModeCheckTime = UnityEditor.EditorApplication.timeSinceStartup + editModeRebuildInterval;
+
+        if (HasTilemapChanged())
+            Rebuild();
+#endif
+    }
+
+    [ContextMenu("Rebuild Slope Colliders")]
+    public void Rebuild()
+    {
+        tilemap = GetComponent<Tilemap>();
+
+        if (tilemap == null)
+            return;
+
+        RebuildTileSets();
+        ClearGeneratedContainer();
+
+        Transform container = CreateGeneratedContainer();
+        BoundsInt bounds = tilemap.cellBounds;
+
+        foreach (Vector3Int cell in bounds.allPositionsWithin)
+        {
+            TileBase tile = tilemap.GetTile(cell);
+            SlopeDirection direction = GetSlopeDirection(tile);
+
+            if (direction == SlopeDirection.None)
+                continue;
+
+            CreateSlopeCollider(container, cell, direction);
+        }
+
+        StoreTilemapHash();
+    }
+
+    private void RebuildTileSets()
+    {
+        slopeUpRightSet.Clear();
+        slopeUpLeftSet.Clear();
+
+        AddTilesToSet(slopeUpRightTiles, slopeUpRightSet);
+        AddTilesToSet(slopeUpLeftTiles, slopeUpLeftSet);
+    }
+
+    private void AddTilesToSet(TileBase[] tiles, HashSet<TileBase> tileSet)
+    {
+        if (tiles == null)
+            return;
+
+        for (int i = 0; i < tiles.Length; i++)
+        {
+            if (tiles[i] != null)
+                tileSet.Add(tiles[i]);
+        }
+    }
+
+    private SlopeDirection GetSlopeDirection(TileBase tile)
+    {
+        if (tile == null)
+            return SlopeDirection.None;
+
+        if (slopeUpRightSet.Contains(tile) || MatchesTileName(tile, slopeUpRightTileNames))
+            return SlopeDirection.UpRight;
+
+        if (slopeUpLeftSet.Contains(tile) || MatchesTileName(tile, slopeUpLeftTileNames))
+            return SlopeDirection.UpLeft;
+
+        return SlopeDirection.None;
+    }
+
+    private bool MatchesTileName(TileBase tile, string[] names)
+    {
+        if (tile == null || names == null)
+            return false;
+
+        string tileName = tile.name;
+
+        if (string.IsNullOrEmpty(tileName))
+            return false;
+
+        for (int i = 0; i < names.Length; i++)
+        {
+            if (!string.IsNullOrEmpty(names[i]) && tileName == names[i])
+                return true;
+        }
+
+        return false;
+    }
+
+    private bool HasTilemapChanged()
+    {
+        tilemap = tilemap != null ? tilemap : GetComponent<Tilemap>();
+
+        if (tilemap == null)
+            return false;
+
+        int currentHash = CalculateTilemapHash();
+
+        if (!hasTilemapHash)
+        {
+            lastTilemapHash = currentHash;
+            hasTilemapHash = true;
+            return false;
+        }
+
+        return currentHash != lastTilemapHash;
+    }
+
+    private void StoreTilemapHash()
+    {
+        if (tilemap == null)
+            return;
+
+        lastTilemapHash = CalculateTilemapHash();
+        hasTilemapHash = true;
+    }
+
+    private int CalculateTilemapHash()
+    {
+        unchecked
+        {
+            int hash = 17;
+            BoundsInt bounds = tilemap.cellBounds;
+            hash = hash * 31 + bounds.xMin;
+            hash = hash * 31 + bounds.yMin;
+            hash = hash * 31 + bounds.zMin;
+            hash = hash * 31 + bounds.xMax;
+            hash = hash * 31 + bounds.yMax;
+            hash = hash * 31 + bounds.zMax;
+
+            foreach (Vector3Int cell in bounds.allPositionsWithin)
+            {
+                TileBase tile = tilemap.GetTile(cell);
+
+                if (tile == null)
+                    continue;
+
+                hash = hash * 31 + cell.GetHashCode();
+                hash = hash * 31 + tile.GetInstanceID();
+            }
+
+            return hash;
+        }
+    }
+
+    private Transform CreateGeneratedContainer()
+    {
+        GameObject container = new GameObject(generatedContainerName);
+        container.layer = gameObject.layer;
+
+        Transform containerTransform = container.transform;
+        containerTransform.SetParent(transform, false);
+        containerTransform.localPosition = Vector3.zero;
+        containerTransform.localRotation = Quaternion.identity;
+        containerTransform.localScale = Vector3.one;
+
+        return containerTransform;
+    }
+
+    private void ClearGeneratedContainer()
+    {
+        Transform existing = transform.Find(generatedContainerName);
+
+        if (existing != null)
+            DestroyGeneratedObject(existing.gameObject);
+    }
+
+    private void CreateSlopeCollider(Transform container, Vector3Int cell, SlopeDirection direction)
+    {
+        Vector3 cellOrigin = tilemap.CellToLocal(cell);
+        Vector3 cellSize = tilemap.layoutGrid != null ? tilemap.layoutGrid.cellSize : Vector3.one;
+
+        GameObject slopeObject = new GameObject($"Slope_{direction}_{cell.x}_{cell.y}");
+        slopeObject.layer = gameObject.layer;
+
+        Transform slopeTransform = slopeObject.transform;
+        slopeTransform.SetParent(container, false);
+        slopeTransform.localPosition = cellOrigin;
+        slopeTransform.localRotation = Quaternion.identity;
+        slopeTransform.localScale = Vector3.one;
+
+        PolygonCollider2D slopeCollider = slopeObject.AddComponent<PolygonCollider2D>();
+        slopeCollider.isTrigger = false;
+        slopeCollider.pathCount = 1;
+        slopeCollider.SetPath(0, GetSlopePath(direction, cellSize));
+    }
+
+    private Vector2[] GetSlopePath(SlopeDirection direction, Vector3 cellSize)
+    {
+        float width = Mathf.Abs(cellSize.x);
+        float height = Mathf.Abs(cellSize.y);
+
+        if (direction == SlopeDirection.UpRight)
+        {
+            return new[]
+            {
+                new Vector2(0f, 0f),
+                new Vector2(width, 0f),
+                new Vector2(width, height)
+            };
+        }
+
+        return new[]
+        {
+            new Vector2(0f, 0f),
+            new Vector2(width, 0f),
+            new Vector2(0f, height)
+        };
+    }
+
+    private void DestroyGeneratedObject(GameObject target)
+    {
+        if (Application.isPlaying)
+            Destroy(target);
+        else
+            DestroyImmediate(target);
+    }
+
+#if UNITY_EDITOR
+    private void RebuildInEditor()
+    {
+        if (this == null || Application.isPlaying || !isActiveAndEnabled)
+            return;
+
+        Rebuild();
+    }
+#endif
+}

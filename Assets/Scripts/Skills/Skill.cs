@@ -17,15 +17,20 @@ public class Skill : MonoBehaviour
         cooldownTimer -= Time.deltaTime;  
     }
 
+    public bool IsReady() => cooldownTimer <= 0;
+    public float CooldownRemaining => Mathf.Max(cooldownTimer, 0);
+
+    protected void StartCooldown() => cooldownTimer = cooldown;
+
     public virtual bool CanUseSkill()
     {
-        if(cooldownTimer < 0)
+        if(IsReady())
         {
             UseSkill();
-            cooldownTimer = cooldown;
+            StartCooldown();
             return true;
         }
-        Debug.Log("¼¼ÄÜÕýÔÚÀäÈ´");
+        Debug.Log("æŠ€èƒ½æ­£åœ¨å†·å´");
         return false;
         
     }

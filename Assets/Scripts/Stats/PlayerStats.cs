@@ -10,6 +10,12 @@ public class PlayerStats : CharacterStats
     public override void TakeDamage(int _damage)
     {
         base.TakeDamage(_damage);
+
+        if (player == null)
+            player = GetComponent<Player>();
+
+        if (_damage > 0)
+            player?.InterruptPreciseDodgeFollowUp();
     }
     protected override void Die()
     {

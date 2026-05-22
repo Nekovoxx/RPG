@@ -9,6 +9,8 @@ public class PlayerWallSlideState : PlayerState
     public override void Enter()
     {
         base.Enter();
+
+        player.ResetExtraJumps();
     }
 
     public override void Exit()

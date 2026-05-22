@@ -21,17 +21,14 @@ public class UI_InGame : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.LeftShift))
-            SetCooldownOf(dashImage);
+        if (skills == null)
+            return;
 
         if(Input.GetKeyDown(KeyCode.Mouse1))
             SetCooldownOf(swordImage);
 
-        if(Input.GetKeyDown(KeyCode.R))
-            SetCooldownOf(flaskImage);
-
-        CheakCooldownOf(dashImage, skills.dash.cooldown);
-        CheakCooldownOf(swordImage, skills.sword.cooldown);
+        CheakCooldownOf(dashImage, skills.dash);
+        CheakCooldownOf(swordImage, skills.sword);
         CheakCooldownOf(flaskImage, Inventory.instance.flaskCooldown);
     }
 
@@ -47,8 +44,24 @@ public class UI_InGame : MonoBehaviour
             _image.fillAmount = 1;
     }
 
+    private void CheakCooldownOf(Image _image, Skill _skill)
+    {
+        if (_image == null || _skill == null || _skill.cooldown <= 0)
+        {
+            if (_image != null)
+                _image.fillAmount = 0;
+
+            return;
+        }
+
+        _image.fillAmount = Mathf.Clamp01(_skill.CooldownRemaining / _skill.cooldown);
+    }
+
     private void CheakCooldownOf(Image _image, float _cooldown)
     {
+        if (_image == null || _cooldown <= 0)
+            return;
+
         if (_image.fillAmount > 0)
             _image.fillAmount -= 1 / _cooldown * Time.deltaTime;
     }

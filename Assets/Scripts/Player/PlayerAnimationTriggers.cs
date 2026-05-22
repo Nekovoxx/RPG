@@ -29,6 +29,11 @@ public class PlayerAnimationTriggers : MonoBehaviour
         }
     }
 
+    private void PreciseDodgeFollowUpAttackTrigger()
+    {
+        SkillManager.instance?.preciseDodge?.DealFollowUpDamage();
+    }
+
     private void ThrowSword()
     {
         SkillManager.instance.sword.CreatSword();

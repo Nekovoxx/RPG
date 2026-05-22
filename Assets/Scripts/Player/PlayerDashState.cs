@@ -12,10 +12,6 @@ public class PlayerDashState : PlayerState
     {
         base.Enter();
 
-        player.skill.clone.CreateClone(player.transform);
-
-        SkillManager.instance.clone.CreateClone(player.transform);
-
         stateTimer = player.dashDuration;
     }
 

@@ -13,6 +13,7 @@ public class PlayerGroundState : PlayerState
     public override void Enter()
     {
         base.Enter();
+        player.ResetExtraJumps();
     }
 
     public override void Exit()
@@ -39,7 +40,7 @@ public class PlayerGroundState : PlayerState
         if (Input.GetKeyDown(KeyCode.Space)&& player.IsGroundDetected()) 
             stateMachine.ChangeState(player.jumpState);
 
-        if (Input.GetKeyDown(KeyCode.R))
+        if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             if (Inventory.instance.CanUseFlask())
             {
@@ -47,7 +48,7 @@ public class PlayerGroundState : PlayerState
             }
             else
             {
-                Debug.Log("不能使用药瓶（没装备或在冷却中）");
+                Debug.Log("涓嶈兘浣跨敤鑽摱锛堟病瑁呭鎴栧湪鍐峰嵈涓級");
             }
         }
     }

@@ -25,6 +25,11 @@ public class Enemy_SkeletonAnimationTriggers : MonoBehaviour
         {
             if (hit.GetComponent<Player>() != null)
             {
+                Player player = hit.GetComponent<Player>();
+
+                if (player.TryStartPreciseDodge(enemy.transform))
+                    return;
+
                 PlayerStats target = hit.GetComponent<PlayerStats>();
                 enemy.stats.DoDamage(target);
             }

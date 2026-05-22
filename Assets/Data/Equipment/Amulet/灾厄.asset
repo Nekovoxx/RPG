@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemType: 1
   itemName: "\u707E\u5384"
-  itemicon: {fileID: -1342722037, guid: a9ca9a41598dd2e44b125928045c518f, type: 3}
+  itemicon: {fileID: -385200428, guid: 31c5387a7456e664dbda19219c547fa2, type: 3}
   dropChance: 0
   equipmentType: 2
   itemCooldown: 0
