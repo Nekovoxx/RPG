@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
@@ -11,7 +11,7 @@ public class UI_EquipmentSlot : UI_ItemSlot
 
     private void OnValidate()
     {
-        gameObject.name = "×°±¸²Û-" + slotType.ToString();
+        gameObject.name = "è£…å¤‡æ§½-" + slotType.ToString();
     }
 
     public override void OnPointerDown(PointerEventData eventData)
@@ -22,7 +22,7 @@ public class UI_EquipmentSlot : UI_ItemSlot
         Inventory.instance.UnequipItem(item.data as ItemData_Equipment);
         Inventory.instance.AddItem(item.data as ItemData_Equipment);
 
-        ui.itemTooltip.HideTooltip();
+        ui?.itemTooltip?.HideTooltip();
 
         CleanUpSlot();
     }
@@ -33,3 +33,4 @@ public class UI_EquipmentSlot : UI_ItemSlot
         icon.color = canUse ? normalColor : disabledColor;
     }
 }
+

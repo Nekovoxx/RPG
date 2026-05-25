@@ -26,6 +26,7 @@ public class TilemapSlopeCollider : MonoBehaviour
         "GandalfHardcore Hell Tiles 32x32_57"
     };
     [SerializeField] private string generatedContainerName = "__GeneratedSlopeColliders";
+    [SerializeField, Min(1)] private int stairStepsPerTile = 4;
     [SerializeField] private bool rebuildInEditMode = true;
     [SerializeField] private bool watchTilemapChangesInEditMode = true;
     [SerializeField] private float editModeRebuildInterval = 0.25f;
@@ -257,30 +258,40 @@ public class TilemapSlopeCollider : MonoBehaviour
         PolygonCollider2D slopeCollider = slopeObject.AddComponent<PolygonCollider2D>();
         slopeCollider.isTrigger = false;
         slopeCollider.pathCount = 1;
-        slopeCollider.SetPath(0, GetSlopePath(direction, cellSize));
+        slopeCollider.SetPath(0, GetSteppedSlopePath(direction, cellSize));
     }
 
-    private Vector2[] GetSlopePath(SlopeDirection direction, Vector3 cellSize)
+    private Vector2[] GetSteppedSlopePath(SlopeDirection direction, Vector3 cellSize)
     {
         float width = Mathf.Abs(cellSize.x);
         float height = Mathf.Abs(cellSize.y);
+        int stepCount = Mathf.Max(1, stairStepsPerTile);
+        float stepWidth = width / stepCount;
+        float stepHeight = height / stepCount;
+        List<Vector2> path = new List<Vector2>(stepCount * 2 + 3)
+        {
+            Vector2.zero,
+            new Vector2(width, 0f)
+        };
 
         if (direction == SlopeDirection.UpRight)
         {
-            return new[]
+            for (int step = stepCount; step >= 1; step--)
             {
-                new Vector2(0f, 0f),
-                new Vector2(width, 0f),
-                new Vector2(width, height)
-            };
+                path.Add(new Vector2(step * stepWidth, step * stepHeight));
+                path.Add(new Vector2((step - 1) * stepWidth, step * stepHeight));
+            }
+
+            return path.ToArray();
         }
 
-        return new[]
+        for (int step = 1; step <= stepCount; step++)
         {
-            new Vector2(0f, 0f),
-            new Vector2(width, 0f),
-            new Vector2(0f, height)
-        };
+            path.Add(new Vector2(width - (step - 1) * stepWidth, step * stepHeight));
+            path.Add(new Vector2(width - step * stepWidth, step * stepHeight));
+        }
+
+        return path.ToArray();
     }
 
     private void DestroyGeneratedObject(GameObject target)

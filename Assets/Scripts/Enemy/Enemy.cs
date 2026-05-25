@@ -23,7 +23,7 @@ public class Enemy : Entity
     public float AttackCoolDown;
     [HideInInspector] public float lastTimeAttacked;
 
-    public static bool isAnyEnemyAttacking = false; // 是否有敌人处于攻击窗口期
+    public static bool isAnyEnemyAttacking = false; // 鏄惁鏈夋晫浜哄浜庢敾鍑荤獥鍙ｆ湡
     public static bool IsAnyEnemyInAttackWindow()
     {
         return isAnyEnemyAttacking;
@@ -88,7 +88,7 @@ public class Enemy : Entity
 
 
     #region Counter Attack Window
-    //反击时间窗口
+    //鍙嶅嚮鏃堕棿绐楀彛
     public virtual void OpenCounterAttackWindow()
     {
         canBeStunned = true;
@@ -116,10 +116,22 @@ public class Enemy : Entity
 
     public virtual void AnimationFinishTrigger() => stateMachine.currentState.AnimationFinishTrigger();
 
-    public virtual RaycastHit2D IsPlayerDetected() => Physics2D.Raycast(wallCheak.position, Vector2.right * facingDir, 50, whatIsPlayer);
+    public virtual bool CanDetectPlayer()
+    {
+        Player player = PlayerManager.instance != null ? PlayerManager.instance.player : null;
+        return player != null && !player.IsInvisible;
+    }
+
+    public virtual RaycastHit2D IsPlayerDetected()
+    {
+        if (!CanDetectPlayer())
+            return new RaycastHit2D();
+
+        return Physics2D.Raycast(wallCheak.position, Vector2.right * facingDir, 50, whatIsPlayer);
+    }
 
 
-    //绘制检测线
+    //缁樺埗妫�娴嬬嚎
     public override void OnDrawGizmos()
     {
         base.OnDrawGizmos();

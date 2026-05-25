@@ -31,6 +31,12 @@ public class PlayerGroundState : PlayerState
         if (Input.GetKeyDown(KeyCode.Q))
             stateMachine.ChangeState(player.counterAttack);
 
+        if (Input.GetKeyDown(KeyCode.T) && player.skill != null && player.skill.sun != null && player.skill.sun.IsReady())
+        {
+            stateMachine.ChangeState(player.sunSkillState);
+            return;
+        }
+
         if(Input.GetKeyDown(KeyCode.Mouse0)) 
             stateMachine.ChangeState(player.primaryAttack);
 

@@ -10,6 +10,7 @@ public class Player : Entity
     public float counterAttackDuration = 0.2f;
 
     public bool isBusy { get;  set; }
+    public bool IsInvisible { get; private set; }
 
 
     [Header("移动信息")]
@@ -56,6 +57,7 @@ public class Player : Entity
     public PlayerCatchSwordState catchSword { get; private set; }
     public PlayerPreciseDodgeState preciseDodgeState { get; private set; }
     public PlayerPreciseDodgeAttackState preciseDodgeAttackState { get; private set; }
+    public PlayerSunSkillState sunSkillState { get; private set; }
     public PlayerDeadState deadState { get; private set; }
     public PlayerHealingState healState { get; private set; }
     #endregion
@@ -81,6 +83,7 @@ public class Player : Entity
         catchSword = new PlayerCatchSwordState(this, stateMachine, "CatchSword");
         preciseDodgeState = new PlayerPreciseDodgeState(this, stateMachine, "PreciseDodge");
         preciseDodgeAttackState = new PlayerPreciseDodgeAttackState(this, stateMachine, "PreciseDodgeAttack");
+        sunSkillState = new PlayerSunSkillState(this, stateMachine, "SunSkill");
         deadState = new PlayerDeadState(this, stateMachine, "Die");
         healState = new PlayerHealingState(this, stateMachine, "Healing");
     }
@@ -108,6 +111,9 @@ public class Player : Entity
         stateMachine.currentState.Update();
 
         CheckForPreciseDodgeFollowUpInput();
+
+        CheckForAwakeningInput();
+        CheckForInvisibilityInput();
 
         CheakForDashInput();
     }
@@ -222,8 +228,28 @@ public class Player : Entity
 
     private void CheckForPreciseDodgeFollowUpInput()
     {
+        if (stateMachine.currentState == preciseDodgeAttackState)
+            return;
+
         if (Input.GetKeyDown(KeyCode.R))
             skill?.preciseDodge?.TryUseFollowUpAttack();
+    }
+
+    private void CheckForAwakeningInput()
+    {
+        if (Input.GetKeyDown(KeyCode.V))
+            skill?.awakening?.TryActivate();
+    }
+
+    private void CheckForInvisibilityInput()
+    {
+        if (Input.GetKeyDown(KeyCode.X))
+            skill?.invisibility?.TryActivate();
+    }
+
+    public void SetInvisible(bool invisible)
+    {
+        IsInvisible = invisible;
     }
 
     private void CheakForDashInput()

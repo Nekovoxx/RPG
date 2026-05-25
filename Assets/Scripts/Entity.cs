@@ -100,6 +100,14 @@ public class Entity : MonoBehaviour
     public virtual bool IsGroundDetected() => Physics2D.Raycast(groundCheak.position, Vector2.down, groundCheakDistance, whatIsGround);
     public virtual bool IsWallDetected() => Physics2D.Raycast(wallCheak.position, Vector2.right * facingDir, wallCheakDistance, whatIsGround);
 
+    public bool TryGetGroundPointBelow(Vector2 origin, float distance, out Vector2 point)
+    {
+        RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, distance, whatIsGround);
+
+        point = hit.collider != null ? hit.point : origin + Vector2.down * distance;
+        return hit.collider != null;
+    }
+
     public virtual void OnDrawGizmos()
     {
         Gizmos.DrawLine(groundCheak.position, new Vector3(groundCheak.position.x, groundCheak.position.y - groundCheakDistance));

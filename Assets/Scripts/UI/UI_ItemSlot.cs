@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class UI_ItemSlot : MonoBehaviour,IPointerDownHandler, IPointerEnterHandler, IPointerExitHandler
+public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerExitHandler, IPointerMoveHandler
 {
     [SerializeField ]protected Image itemImage;
     [SerializeField ]protected TextMeshProUGUI itemText;
@@ -52,28 +52,34 @@ public class UI_ItemSlot : MonoBehaviour,IPointerDownHandler, IPointerEnterHandl
         if(Input.GetKey(KeyCode.LeftControl))
         {
             Inventory.instance.RemoveItem(item.data);
+            ui?.itemTooltip?.HideTooltip();
             return;
         }
 
         if (item.data.itemType == ItemType.Equipment)
             Inventory.instance.EquipItem(item.data);
 
-        ui.itemTooltip.HideTooltip();
+        ui?.itemTooltip?.HideTooltip();
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if(item == null)
+        if(item == null || item.data == null || ui == null || ui.itemTooltip == null)
             return;
 
-       ui.itemTooltip.ShowTooltip(item.data as ItemData_Equipment);
+       ui.itemTooltip.ShowTooltip(item.data);
+    }
+
+    public void OnPointerMove(PointerEventData eventData)
+    {
+        if (item == null || item.data == null || ui == null || ui.itemTooltip == null)
+            return;
+
+        ui.itemTooltip.UpdateTooltipPosition();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if(item == null)
-            return;
-
-        ui.itemTooltip.HideTooltip();
+        ui?.itemTooltip?.HideTooltip();
     }
 }

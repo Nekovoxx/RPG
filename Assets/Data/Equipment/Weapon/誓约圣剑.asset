@@ -15,11 +15,13 @@ MonoBehaviour:
   itemType: 1
   itemName: "\u8A93\u7EA6\u5723\u5251"
   itemicon: {fileID: 530073764, guid: a91abade5946b604ea6dcce594c7b27c, type: 3}
+  itemDescription: "\u8A93\u8A00\u672C\u8BE5\u4F7F\u4EBA\u9AD8\u8D35\u3002\n\u53EF\u80CC\u8D1F\u5F97\u592A\u4E45\uFF0C\u4FBF\u4E0E\u67B7\u9501\u65E0\u5F02\u3002"
   dropChance: 10.1
   equipmentType: 0
   itemCooldown: 0
   itemEffects:
   - {fileID: 11400000, guid: 0e130706e8c33104f8e9091b2bac282c, type: 2}
+  specialEffectDescription: "\u653B\u51FB\u654C\u4EBA\u65F6\u53EF\u4EE5\u6CBB\u7597\u81EA\u8EAB"
   strength: 0
   agility: 0
   intelligence: 0
@@ -36,8 +38,6 @@ MonoBehaviour:
   lightingDamage: 0
   craftingMaterials:
   - data: {fileID: 11400000, guid: 21349a5b5c85b224fbf970c08bb68ac8, type: 2}
-    stackSize: 1
-  - data: {fileID: 11400000, guid: 21349a5b5c85b224fbf970c08bb68ac8, type: 2}
-    stackSize: 2
-  - data: {fileID: 11400000, guid: 1fd422bbf644b3d41a8c6eca2bd249a3, type: 2}
+    stackSize: 5
+  - data: {fileID: 11400000, guid: fdd2d67ad23e1454fbb568250f8734a0, type: 2}
     stackSize: 3

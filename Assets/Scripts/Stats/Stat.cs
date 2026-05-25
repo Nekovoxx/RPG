@@ -5,13 +5,17 @@ using UnityEngine;
 [System.Serializable]
 public class Stat
 {
-    [SerializeField] private int baseValue;
+    [SerializeField, InspectorName("基础数值")] private int baseValue;
 
+    [InspectorName("加成列表")]
     public List<int> modifiers;
 
     public int GetValue()
     {
         int finalValue = baseValue;
+
+        if (modifiers == null)
+            modifiers = new List<int>();
 
         foreach (int modifier in modifiers)
         {
@@ -26,11 +30,17 @@ public class Stat
     }
     public void AddModifier(int _modifier)
     {
+        if (modifiers == null)
+            modifiers = new List<int>();
+
         modifiers.Add(_modifier);
     }
 
     public void RemoveModifier(int _modifier)
     {
+        if (modifiers == null)
+            return;
+
         modifiers.Remove(_modifier);
     }
 

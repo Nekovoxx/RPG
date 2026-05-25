@@ -13,13 +13,19 @@ public class PreciseDodge_Skill : Skill
     [SerializeField] private bool followUpUnlocked = true;
 
     [Header("Follow Up Attack")]
-    [SerializeField] private float followUpAttackDuration = 3f;
+    [SerializeField] private float followUpAttackDuration = 0.65f;
+    [SerializeField] private float[] followUpSegmentDurations = { 0.6f, 0.5f, 1.1f };
+    [SerializeField] private float[] followUpSegmentHitTimes = { 0.18f, 0.22f, 0.35f };
+    [SerializeField] private float[] followUpSegmentLungeDurations = { 0.08f, 0.08f, 0f };
+    [SerializeField] private float[] followUpSegmentLungeSpeeds = { 4f, 5f, 0f };
     [SerializeField] private float followUpLungeDuration = 0.28f;
     [SerializeField] private float followUpLungeSpeed = 16f;
     [SerializeField] private float followUpHitRadiusMultiplier = 1.35f;
     [SerializeField] private float followUpHitForwardOffset = 0.55f;
     [SerializeField] private bool followUpCanHitSameEnemyMultipleTimes = true;
-    [SerializeField] private float[] followUpHitTimes = { 0.5f, 1.35f, 2.25f };
+    [SerializeField] private float followUpFinisherStartTime = 0.18f;
+    [SerializeField] private float followUpFinisherDuration = 0.65f;
+    [SerializeField] private float followUpFinisherForwardDistance = 2.4f;
 
     private readonly List<Enemy> frozenEnemies = new List<Enemy>();
     private readonly HashSet<EnemyStats> followUpHitTargets = new HashSet<EnemyStats>();
@@ -27,16 +33,36 @@ public class PreciseDodge_Skill : Skill
     private float bonusTimeStopDuration;
     private float followUpExpiresAt;
     private bool followUpQueued;
+    private int followUpComboCounter;
 
     public bool IsDodging { get; private set; }
     public bool IsFollowUpAttacking { get; private set; }
     public float DodgeDuration => dodgeDuration;
     public float DodgeSpeed => dodgeSpeed;
-    public float FollowUpAttackDuration => followUpAttackDuration;
-    public float FollowUpLungeDuration => followUpLungeDuration;
-    public float FollowUpLungeSpeed => followUpLungeSpeed;
-    public int FollowUpHitCount => followUpHitTimes != null ? followUpHitTimes.Length : 0;
+    public float FollowUpAttackDuration => GetFollowUpSegmentDuration(followUpComboCounter);
+    public float CurrentFollowUpLungeDuration => GetArrayValue(followUpSegmentLungeDurations, followUpComboCounter, followUpLungeDuration);
+    public float CurrentFollowUpLungeSpeed => GetArrayValue(followUpSegmentLungeSpeeds, followUpComboCounter, followUpLungeSpeed);
+    public float FollowUpFinisherStartTime => followUpFinisherStartTime;
+    public float FollowUpFinisherDuration => followUpFinisherDuration;
+    public float FollowUpFinisherForwardDistance => followUpFinisherForwardDistance;
+    public int CurrentFollowUpComboIndex => followUpComboCounter;
+    public bool CurrentFollowUpUsesFinisher => followUpComboCounter >= MaxFollowUpComboIndex;
     public int DodgeDirection { get; private set; } = -1;
+
+    private int MaxFollowUpComboIndex => 2;
+
+    private void Reset()
+    {
+        cooldown = 1f;
+    }
+
+    protected override void Start()
+    {
+        base.Start();
+
+        if (cooldown <= 0)
+            cooldown = 1f;
+    }
 
     public bool TryStartFromAttackFrame(Transform attacker)
     {
@@ -86,10 +112,19 @@ public class PreciseDodge_Skill : Skill
     {
         EnsurePlayerReference();
 
-        if (!followUpUnlocked || player == null || followUpExpiresAt <= 0 || Time.time > followUpExpiresAt)
+        if (!followUpUnlocked || player == null)
             return false;
 
         if (player.stateMachine.currentState == player.preciseDodgeAttackState)
+        {
+            if (followUpComboCounter >= MaxFollowUpComboIndex)
+                return false;
+
+            followUpQueued = true;
+            return true;
+        }
+
+        if (followUpExpiresAt <= 0 || Time.time > followUpExpiresAt)
             return false;
 
         if (player.stateMachine.currentState == player.preciseDodgeState)
@@ -118,6 +153,7 @@ public class PreciseDodge_Skill : Skill
     {
         followUpQueued = false;
         followUpExpiresAt = 0;
+        followUpComboCounter = 0;
         EndFollowUpAttack();
     }
 
@@ -129,12 +165,36 @@ public class PreciseDodge_Skill : Skill
         return true;
     }
 
-    public float GetFollowUpHitTime(int index)
+    public float GetCurrentFollowUpHitTime()
     {
-        if (followUpHitTimes == null || followUpHitTimes.Length == 0)
-            return 0;
+        return GetArrayValue(followUpSegmentHitTimes, followUpComboCounter, 0.2f);
+    }
 
-        return followUpHitTimes[Mathf.Clamp(index, 0, followUpHitTimes.Length - 1)];
+    public bool TryPrepareQueuedFollowUpSegment()
+    {
+        if (!followUpQueued || followUpComboCounter >= MaxFollowUpComboIndex)
+            return false;
+
+        followUpQueued = false;
+        followUpComboCounter++;
+        followUpExpiresAt = Time.time + followUpWindow;
+        return true;
+    }
+
+    public void CompleteFollowUpAttackSegment()
+    {
+        EndFollowUpAttack();
+
+        if (followUpComboCounter >= MaxFollowUpComboIndex)
+        {
+            followUpComboCounter = 0;
+            followUpQueued = false;
+            followUpExpiresAt = 0;
+            return;
+        }
+
+        followUpComboCounter++;
+        followUpExpiresAt = Time.time + followUpWindow;
     }
 
     public void BeginFollowUpAttack()
@@ -148,6 +208,19 @@ public class PreciseDodge_Skill : Skill
     {
         IsFollowUpAttacking = false;
         followUpHitTargets.Clear();
+    }
+
+    private float GetFollowUpSegmentDuration(int index)
+    {
+        return GetArrayValue(followUpSegmentDurations, index, followUpAttackDuration);
+    }
+
+    private float GetArrayValue(float[] values, int index, float fallback)
+    {
+        if (values == null || values.Length == 0)
+            return fallback;
+
+        return values[Mathf.Clamp(index, 0, values.Length - 1)];
     }
 
     public void DealFollowUpDamage()
@@ -191,6 +264,7 @@ public class PreciseDodge_Skill : Skill
 
         IsDodging = true;
         followUpQueued = false;
+        followUpComboCounter = 0;
         followUpExpiresAt = Time.time + totalTimeStopDuration + followUpWindow;
 
         player.MarkPreciseDodgeStarted();

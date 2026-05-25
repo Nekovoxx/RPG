@@ -22,11 +22,13 @@ public class UI_CraftWindow : MonoBehaviour
             materialImage[i].GetComponentInChildren<TextMeshProUGUI>().color = Color.clear;
         }
 
-        for (int i = 0; i < _data.craftingMaterials.Count; i++)
-        {
-            if (_data.craftingMaterials.Count > materialImage.Length)
-                Debug.LogWarning("You have more materials amount than you have material slots in craft window");
+        if (_data.craftingMaterials.Count > materialImage.Length)
+            Debug.LogWarning("You have more materials amount than you have material slots in craft window");
 
+        int visibleMaterialCount = Mathf.Min(_data.craftingMaterials.Count, materialImage.Length);
+
+        for (int i = 0; i < visibleMaterialCount; i++)
+        {
             materialImage[i].sprite = _data.craftingMaterials[i].data.itemicon;
             materialImage[i].color = Color.white;
 
@@ -38,7 +40,7 @@ public class UI_CraftWindow : MonoBehaviour
 
         itemIcon.sprite = _data.itemicon;
         itemName.text = _data.itemName;
-        itemDescription.text = _data.GetDescription();
+        itemDescription.text = _data.GetCraftDescription();
         craftButton.onClick.AddListener(() => Inventory.instance.CanCraft(_data,_data.craftingMaterials));
     }
 }

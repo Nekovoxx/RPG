@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-public class UI_SkillTreeSlot : MonoBehaviour, IPointerEnterHandler , IPointerExitHandler
+public class UI_SkillTreeSlot : MonoBehaviour, IPointerEnterHandler, IPointerMoveHandler, IPointerExitHandler
 {
     private static readonly string[] DeprecatedSkillKeywords = { "\u5E7B\u8C61", "\u6C34\u6676", "\u9ED1\u6D1E" };
 
@@ -89,28 +89,19 @@ public class UI_SkillTreeSlot : MonoBehaviour, IPointerEnterHandler , IPointerEx
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (ui == null || ui.skillToolTip == null)
+            return;
+
         ui.skillToolTip.ShowToolTip(skillDescription, skillName);
+    }
 
-        Vector2 mousePosition = Input.mousePosition;
-
-        float xOffset = 0;
-        float yOffset = 0;
-
-        if (mousePosition.x > 600)
-            xOffset = -150;
-        else
-            xOffset = 150;
-
-        if (mousePosition.y > 320)
-            yOffset = -150;
-        else
-            yOffset = 150;
-
-        ui.skillToolTip.transform.position = new Vector2(mousePosition.x + xOffset, mousePosition.y + yOffset);
+    public void OnPointerMove(PointerEventData eventData)
+    {
+        ui?.skillToolTip?.UpdateToolTipPosition();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        ui.skillToolTip.HideToolTip();
+        ui?.skillToolTip?.HideToolTip();
     }
 }

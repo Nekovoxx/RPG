@@ -17,8 +17,8 @@ public class UI : MonoBehaviour
     {
         SwtichTo(inGameUI);
 
-        itemTooltip.gameObject.SetActive(false);
-        statToolTip.gameObject.SetActive(false);
+        itemTooltip?.gameObject.SetActive(false);
+        statToolTip?.gameObject.SetActive(false);
     }
 
     void Update()

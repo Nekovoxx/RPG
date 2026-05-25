@@ -102,7 +102,7 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 75
-        width: 130
+        width: 126
         height: 75
       alignment: 8
       pivot: {x: 1, y: 0}
@@ -123,7 +123,7 @@ TextureImporter:
         serializedVersion: 2
         x: 140
         y: 75
-        width: 130
+        width: 127
         height: 75
       alignment: 8
       pivot: {x: 1, y: 0}
@@ -142,12 +142,12 @@ TextureImporter:
       name: 2x-1 atk_merged_2
       rect:
         serializedVersion: 2
-        x: 278
+        x: 289
         y: 75
-        width: 130
+        width: 120
         height: 75
-      alignment: 8
-      pivot: {x: 1, y: 0}
+      alignment: 9
+      pivot: {x: 0.9590841, y: -0.003040975}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -165,10 +165,10 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 130
+        width: 132
         height: 75
-      alignment: 8
-      pivot: {x: 1, y: 0}
+      alignment: 9
+      pivot: {x: 0.96246743, y: -0.0050812974}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -188,8 +188,8 @@ TextureImporter:
         y: 0
         width: 130
         height: 75
-      alignment: 8
-      pivot: {x: 1, y: 0}
+      alignment: 9
+      pivot: {x: 0.9609936, y: -0.0018274098}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -205,12 +205,12 @@ TextureImporter:
       name: 2x-1 atk_merged_5
       rect:
         serializedVersion: 2
-        x: 278
+        x: 288
         y: 0
-        width: 130
+        width: 120
         height: 75
-      alignment: 8
-      pivot: {x: 1, y: 0}
+      alignment: 9
+      pivot: {x: 0.9614011, y: 0.000000041317882}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
