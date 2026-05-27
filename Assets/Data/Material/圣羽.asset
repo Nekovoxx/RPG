@@ -15,4 +15,5 @@ MonoBehaviour:
   itemType: 0
   itemName: "\u5723\u7FBD"
   itemicon: {fileID: -1281211869, guid: 31c5387a7456e664dbda19219c547fa2, type: 3}
+  itemDescription: 
   dropChance: 0

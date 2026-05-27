@@ -36,6 +36,7 @@ public class Player : Entity
     private float lastShiftPressedTime = -999f;
 
     public SkillManager skill { get; private set; }
+    public PlayerInteraction interaction { get; private set; }
     public GameObject sword;
     public bool canHeal;
 
@@ -65,6 +66,8 @@ public class Player : Entity
     protected override void Awake()
     {
         base.Awake();
+        EnsureInteractionComponent();
+
         stateMachine = new PlayerStateMachine();
 
         idleState = new PlayerIdleState(this, stateMachine, "Idle");
@@ -86,6 +89,14 @@ public class Player : Entity
         sunSkillState = new PlayerSunSkillState(this, stateMachine, "SunSkill");
         deadState = new PlayerDeadState(this, stateMachine, "Die");
         healState = new PlayerHealingState(this, stateMachine, "Healing");
+    }
+
+    private void EnsureInteractionComponent()
+    {
+        if (!TryGetComponent<PlayerInteraction>(out PlayerInteraction playerInteraction))
+            playerInteraction = gameObject.AddComponent<PlayerInteraction>();
+
+        interaction = playerInteraction;
     }
 
     protected override void Start()

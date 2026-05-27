@@ -10,9 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 322fdf57f4c98ad4e898a827c21cf033, type: 3}
-  m_Name: New Item Data
+  m_Name: "\u7070\u70EC"
   m_EditorClassIdentifier: 
   itemType: 0
-  itemName: 
-  itemicon: {fileID: 0}
+  itemName: "\u7070\u70EC"
+  itemicon: {fileID: -2140473041, guid: 31c5387a7456e664dbda19219c547fa2, type: 3}
+  itemDescription: 
   dropChance: 0

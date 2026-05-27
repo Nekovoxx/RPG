@@ -2,31 +2,101 @@ using UnityEngine;
 
 public class ParallaBackground : MonoBehaviour
 {
-    private GameObject cam;
+    [SerializeField] private Transform cameraTransform;
+    [SerializeField] private float ParallaxEffect = 1f;
+    [SerializeField] private float verticalParallaxEffect = 1f;
+    [SerializeField] private bool followVerticalMovement = true;
+    [SerializeField] private bool loopHorizontally = true;
 
-    [SerializeField] private float ParallaxEffect;
-
-    private float xPosition;
+    private Vector3 startPosition;
+    private Vector3 cameraStartPosition;
     private float length;
-    void Start()
-    {
-        cam = GameObject.Find("Main Camera");
+    private bool hasCameraStartPosition;
 
-        length = GetComponent<SpriteRenderer>().bounds.size.x;
-        xPosition = transform.position.x;
+    private void Start()
+    {
+        ResolveCamera();
+
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+        length = spriteRenderer != null ? spriteRenderer.bounds.size.x : 0f;
+        startPosition = transform.position;
+        CacheCameraStartPosition();
     }
 
-
-    void Update()
+    private void LateUpdate()
     {
-        float distamceMoved = cam.transform.position.x * (1 - ParallaxEffect);
-        float distanceToMove = cam.transform.position.x;
+        if (cameraTransform == null && !ResolveCamera())
+            return;
 
-        transform.position = new Vector3(xPosition + distanceToMove, transform.position.y);
+        if (!hasCameraStartPosition)
+            CacheCameraStartPosition();
 
-        if (distamceMoved > xPosition + length)
-            xPosition = xPosition + length;
-        else if (distamceMoved < xPosition - length)
-            xPosition = xPosition - length;
+        Vector3 cameraDelta = cameraTransform.position - cameraStartPosition;
+        Vector3 targetPosition = startPosition;
+
+        targetPosition.x += cameraDelta.x * ParallaxEffect;
+
+        if (followVerticalMovement)
+            targetPosition.y += cameraDelta.y * verticalParallaxEffect;
+
+        transform.position = targetPosition;
+
+        if (loopHorizontally)
+            WrapHorizontally(cameraDelta);
+    }
+
+    private bool ResolveCamera()
+    {
+        if (cameraTransform != null)
+            return true;
+
+        if (Camera.main != null)
+        {
+            cameraTransform = Camera.main.transform;
+            return true;
+        }
+
+        GameObject mainCamera = GameObject.Find("Main Camera");
+
+        if (mainCamera == null)
+            return false;
+
+        cameraTransform = mainCamera.transform;
+        return true;
+    }
+
+    private void CacheCameraStartPosition()
+    {
+        if (cameraTransform == null)
+            return;
+
+        cameraStartPosition = cameraTransform.position;
+        hasCameraStartPosition = true;
+    }
+
+    private void WrapHorizontally(Vector3 cameraDelta)
+    {
+        if (length <= 0.01f || cameraTransform == null)
+            return;
+
+        float distanceFromCamera = cameraTransform.position.x - transform.position.x;
+
+        if (distanceFromCamera > length)
+        {
+            startPosition.x += length;
+        }
+        else if (distanceFromCamera < -length)
+        {
+            startPosition.x -= length;
+        }
+        else
+        {
+            return;
+        }
+
+        transform.position = new Vector3(
+            startPosition.x + cameraDelta.x * ParallaxEffect,
+            transform.position.y,
+            startPosition.z);
     }
 }

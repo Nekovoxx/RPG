@@ -10,10 +10,7 @@ public class Awakening_Skill : Skill
 
     [Header("Aura")]
     [SerializeField] private AwakeningAuraEffect auraPrefab;
-    [SerializeField] private Vector3 auraOffset = new Vector3(0f, 0.7f, 0f);
-    [SerializeField, Min(0.05f)] private float auraRadiusX = 1.08f;
-    [SerializeField, Min(0.05f)] private float auraRadiusY = 1.5f;
-    [SerializeField, Min(0.01f)] private float auraLineWidth = 0.12f;
+    [SerializeField, Min(1)] private int auraPixelWidth = 1;
     [SerializeField] private Color auraInnerGold = new Color(1f, 0.9f, 0.25f, 1f);
     [SerializeField] private Color auraOuterGold = new Color(1f, 0.55f, 0.06f, 0.9f);
 
@@ -168,15 +165,26 @@ public class Awakening_Skill : Skill
         if (player == null)
             return;
 
-        activeAura = auraPrefab != null
-            ? Instantiate(auraPrefab, player.transform)
-            : new GameObject("Awakening Aura").AddComponent<AwakeningAuraEffect>();
+        SpriteRenderer playerRenderer = GetPlayerRenderer();
 
-        activeAura.transform.SetParent(player.transform, false);
-        activeAura.transform.localPosition = auraOffset;
-        activeAura.transform.localRotation = Quaternion.identity;
-        activeAura.transform.localScale = Vector3.one;
-        activeAura.Configure(auraRadiusX, auraRadiusY, auraLineWidth, auraInnerGold, auraOuterGold);
+        activeAura = auraPrefab != null
+            ? Instantiate(auraPrefab)
+            : new GameObject("Awakening Pixel Aura").AddComponent<AwakeningAuraEffect>();
+
+        if (playerRenderer != null)
+        {
+            activeAura.AttachTo(playerRenderer);
+        }
+        else
+        {
+            activeAura.transform.SetParent(player.transform, false);
+            activeAura.transform.localPosition = Vector3.zero;
+            activeAura.transform.localRotation = Quaternion.identity;
+            activeAura.transform.localScale = Vector3.one;
+        }
+
+        activeAura.FollowSortingOf(playerRenderer, -1);
+        activeAura.Configure(auraPixelWidth, auraInnerGold, auraOuterGold);
     }
 
     private void ClearAura()
@@ -198,5 +206,16 @@ public class Awakening_Skill : Skill
 
         if (player == null)
             player = FindObjectOfType<Player>();
+    }
+
+    private SpriteRenderer GetPlayerRenderer()
+    {
+        if (player == null)
+            return null;
+
+        if (player.sr != null)
+            return player.sr;
+
+        return player.GetComponentInChildren<SpriteRenderer>();
     }
 }

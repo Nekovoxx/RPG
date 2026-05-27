@@ -15,7 +15,7 @@ TagManager:
   - Enemy
   - Sword
   - Item
-  - 
+  - NPC
   - 
   - 
   - 
@@ -55,4 +55,7 @@ TagManager:
     locked: 0
   - name: Player
     uniqueID: 685465165
+    locked: 0
+  - name: NPC
+    uniqueID: 2482738539
     locked: 0

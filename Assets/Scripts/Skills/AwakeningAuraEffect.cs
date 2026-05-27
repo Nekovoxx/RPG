@@ -1,154 +1,176 @@
+using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(LineRenderer))]
 public class AwakeningAuraEffect : MonoBehaviour
 {
-    [SerializeField, Min(12)] private int segments = 96;
-    [SerializeField, Min(0.05f)] private float radiusX = 1.08f;
-    [SerializeField, Min(0.05f)] private float radiusY = 1.5f;
-    [SerializeField, Min(0.01f)] private float lineWidth = 0.12f;
-    [SerializeField] private Color innerGold = new Color(1f, 0.9f, 0.25f, 1f);
-    [SerializeField] private Color outerGold = new Color(1f, 0.55f, 0.06f, 0.9f);
-    [SerializeField, Min(0f)] private float pulseSpeed = 6.5f;
-    [SerializeField, Min(0f)] private float pulseAmount = 0.1f;
-    [SerializeField, Min(0f)] private float rotateSpeed = 70f;
+    [Header("像素描边")]
+    [SerializeField, Min(1)] private int outlinePixelWidth = 1;
+    [SerializeField] private Color innerGold = new Color(1f, 0.9f, 0.18f, 1f);
+    [SerializeField] private Color outerGold = new Color(1f, 0.55f, 0.04f, 0.9f);
+    [SerializeField, Min(0f)] private float pulseSpeed = 5.5f;
+    [SerializeField, Range(0f, 0.4f)] private float pulseAlpha = 0.12f;
+    [SerializeField] private int sortingOrderOffset = -1;
 
-    private static Sprite glowSprite;
+    private readonly List<SpriteRenderer> outlineRenderers = new List<SpriteRenderer>();
+    private readonly Vector2Int[] outlineDirections =
+    {
+        new Vector2Int(1, 0),
+        new Vector2Int(-1, 0),
+        new Vector2Int(0, 1),
+        new Vector2Int(0, -1),
+        new Vector2Int(1, 1),
+        new Vector2Int(1, -1),
+        new Vector2Int(-1, 1),
+        new Vector2Int(-1, -1)
+    };
 
-    private LineRenderer ring;
-    private SpriteRenderer glow;
-    private Material runtimeMaterial;
-    private float angleOffset;
+    private SpriteRenderer targetRenderer;
+    private Material outlineMaterial;
 
     private void Awake()
     {
-        SetupVisuals();
+        DisableLegacyRenderers();
     }
 
-    private void OnEnable()
+    private void LateUpdate()
     {
-        DrawAura();
-    }
-
-    private void Update()
-    {
-        angleOffset += rotateSpeed * Mathf.Deg2Rad * Time.deltaTime;
-        DrawAura();
+        SyncOutlineRenderers();
     }
 
     private void OnDestroy()
     {
-        if (runtimeMaterial != null)
-            Destroy(runtimeMaterial);
+        if (outlineMaterial != null)
+            Destroy(outlineMaterial);
     }
 
-    public void Configure(float newRadiusX, float newRadiusY, float newLineWidth, Color newInnerGold, Color newOuterGold)
+    public void AttachTo(SpriteRenderer sourceRenderer)
     {
-        radiusX = Mathf.Max(0.05f, newRadiusX);
-        radiusY = Mathf.Max(0.05f, newRadiusY);
-        lineWidth = Mathf.Max(0.01f, newLineWidth);
+        targetRenderer = sourceRenderer;
+
+        if (targetRenderer != null)
+        {
+            transform.SetParent(targetRenderer.transform, false);
+            transform.localPosition = Vector3.zero;
+            transform.localRotation = Quaternion.identity;
+            transform.localScale = Vector3.one;
+        }
+
+        EnsureOutlineRenderers();
+        SyncOutlineRenderers();
+    }
+
+    public void Configure(int pixelWidth, Color newInnerGold, Color newOuterGold)
+    {
+        outlinePixelWidth = Mathf.Max(1, pixelWidth);
         innerGold = newInnerGold;
         outerGold = newOuterGold;
 
-        SetupVisuals();
-        DrawAura();
+        EnsureOutlineRenderers();
+        SyncOutlineRenderers();
     }
 
-    private void SetupVisuals()
+    public void FollowSortingOf(SpriteRenderer sourceRenderer, int orderOffset = -1)
     {
-        if (ring == null)
-            ring = GetComponent<LineRenderer>();
+        targetRenderer = sourceRenderer;
+        sortingOrderOffset = orderOffset;
 
-        if (runtimeMaterial == null)
-            runtimeMaterial = new Material(Shader.Find("Sprites/Default"));
-
-        ring.useWorldSpace = false;
-        ring.loop = true;
-        ring.positionCount = segments;
-        ring.widthMultiplier = lineWidth;
-        ring.startColor = innerGold;
-        ring.endColor = outerGold;
-        ring.material = runtimeMaterial;
-        ring.textureMode = LineTextureMode.Stretch;
-        ring.sortingOrder = 22;
-        ring.numCapVertices = 4;
-        ring.numCornerVertices = 4;
-
-        if (glow == null)
-            glow = CreateGlowRenderer();
-
-        glow.sprite = GetGlowSprite();
-        glow.color = new Color(innerGold.r, innerGold.g, innerGold.b, 0.32f);
-        glow.sortingOrder = 18;
+        EnsureOutlineRenderers();
+        SyncOutlineRenderers();
     }
 
-    private SpriteRenderer CreateGlowRenderer()
+    private void EnsureOutlineRenderers()
     {
-        Transform child = transform.Find("Awakening Glow");
-        GameObject glowObject = child != null ? child.gameObject : new GameObject("Awakening Glow");
-
-        glowObject.transform.SetParent(transform, false);
-        glowObject.transform.localPosition = Vector3.zero;
-        glowObject.transform.localRotation = Quaternion.identity;
-
-        SpriteRenderer spriteRenderer = glowObject.GetComponent<SpriteRenderer>();
-
-        if (spriteRenderer == null)
-            spriteRenderer = glowObject.AddComponent<SpriteRenderer>();
-
-        return spriteRenderer;
-    }
-
-    private Sprite GetGlowSprite()
-    {
-        if (glowSprite != null)
-            return glowSprite;
-
-        const int size = 64;
-        Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
-        texture.filterMode = FilterMode.Bilinear;
-        texture.wrapMode = TextureWrapMode.Clamp;
-
-        Vector2 center = new Vector2((size - 1) * 0.5f, (size - 1) * 0.5f);
-        float maxDistance = size * 0.5f;
-
-        for (int y = 0; y < size; y++)
-        {
-            for (int x = 0; x < size; x++)
-            {
-                float distance = Vector2.Distance(new Vector2(x, y), center) / maxDistance;
-                float alpha = Mathf.Clamp01(1f - distance);
-                alpha = alpha * alpha * 0.75f;
-                texture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
-            }
-        }
-
-        texture.Apply();
-        glowSprite = Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 32f);
-        glowSprite.name = "Awakening Generated Glow";
-
-        return glowSprite;
-    }
-
-    private void DrawAura()
-    {
-        if (ring == null)
+        if (outlineRenderers.Count == outlineDirections.Length)
             return;
 
-        float pulse = 1f + Mathf.Sin(Time.time * pulseSpeed) * pulseAmount;
-        float secondaryPulse = 1f + Mathf.Sin(Time.time * (pulseSpeed * 0.65f) + 1.4f) * (pulseAmount * 0.55f);
-
-        if (glow != null)
-            glow.transform.localScale = new Vector3(radiusX * 2.8f * secondaryPulse, radiusY * 2.55f * secondaryPulse, 1f);
-
-        for (int i = 0; i < segments; i++)
+        if (outlineMaterial == null)
         {
-            float t = i / (float)segments;
-            float angle = t * Mathf.PI * 2f + angleOffset;
-            float shimmer = 1f + Mathf.Sin(angle * 5f + Time.time * pulseSpeed) * 0.035f;
-            Vector3 point = new Vector3(Mathf.Cos(angle) * radiusX * pulse * shimmer, Mathf.Sin(angle) * radiusY * pulse, 0f);
-
-            ring.SetPosition(i, point);
+            Shader shader = Shader.Find("Sprites/Default");
+            outlineMaterial = shader != null ? new Material(shader) : null;
         }
+
+        for (int i = outlineRenderers.Count; i < outlineDirections.Length; i++)
+        {
+            GameObject outlineObject = new GameObject("Awakening Pixel Outline " + i);
+            outlineObject.transform.SetParent(transform, false);
+            outlineObject.transform.localRotation = Quaternion.identity;
+            outlineObject.transform.localScale = Vector3.one;
+
+            SpriteRenderer renderer = outlineObject.AddComponent<SpriteRenderer>();
+
+            if (outlineMaterial != null)
+                renderer.sharedMaterial = outlineMaterial;
+
+            outlineRenderers.Add(renderer);
+        }
+    }
+
+    private void SyncOutlineRenderers()
+    {
+        if (targetRenderer == null)
+        {
+            SetOutlineVisible(false);
+            return;
+        }
+
+        EnsureOutlineRenderers();
+
+        Sprite currentSprite = targetRenderer.sprite;
+
+        if (currentSprite == null || !targetRenderer.enabled)
+        {
+            SetOutlineVisible(false);
+            return;
+        }
+
+        float pixelSize = outlinePixelWidth / currentSprite.pixelsPerUnit;
+        float pulse = 1f - pulseAlpha + Mathf.Sin(Time.time * pulseSpeed) * pulseAlpha;
+        Color currentInnerGold = new Color(innerGold.r, innerGold.g, innerGold.b, Mathf.Clamp01(innerGold.a * pulse));
+        Color currentOuterGold = new Color(outerGold.r, outerGold.g, outerGold.b, Mathf.Clamp01(outerGold.a * pulse));
+
+        for (int i = 0; i < outlineRenderers.Count; i++)
+        {
+            SpriteRenderer outlineRenderer = outlineRenderers[i];
+
+            if (outlineRenderer == null)
+                continue;
+
+            Vector2Int direction = outlineDirections[i];
+            bool diagonal = direction.x != 0 && direction.y != 0;
+
+            outlineRenderer.gameObject.SetActive(true);
+            outlineRenderer.sprite = currentSprite;
+            outlineRenderer.color = diagonal ? currentOuterGold : currentInnerGold;
+            outlineRenderer.flipX = targetRenderer.flipX;
+            outlineRenderer.flipY = targetRenderer.flipY;
+            outlineRenderer.drawMode = targetRenderer.drawMode;
+            outlineRenderer.size = targetRenderer.size;
+            outlineRenderer.maskInteraction = targetRenderer.maskInteraction;
+            outlineRenderer.sortingLayerID = targetRenderer.sortingLayerID;
+            outlineRenderer.sortingOrder = targetRenderer.sortingOrder + sortingOrderOffset;
+            outlineRenderer.transform.localPosition = new Vector3(direction.x * pixelSize, direction.y * pixelSize, 0f);
+        }
+    }
+
+    private void SetOutlineVisible(bool visible)
+    {
+        for (int i = 0; i < outlineRenderers.Count; i++)
+        {
+            if (outlineRenderers[i] != null)
+                outlineRenderers[i].gameObject.SetActive(visible);
+        }
+    }
+
+    private void DisableLegacyRenderers()
+    {
+        LineRenderer legacyRing = GetComponent<LineRenderer>();
+
+        if (legacyRing != null)
+            legacyRing.enabled = false;
+
+        Transform legacyGlow = transform.Find("Awakening Glow");
+
+        if (legacyGlow != null)
+            legacyGlow.gameObject.SetActive(false);
     }
 }
