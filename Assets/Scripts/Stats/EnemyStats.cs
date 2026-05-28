@@ -1,24 +1,52 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class EnemyStats : CharacterStats
 {
     private Enemy enemy;
     private ItemDrop myDropSystem;
+    private EnemyEmberDrop emberDropSystem;
 
-    [Header("�ȼ�����")]
-    [SerializeField] private int level = 1;
+    [Header("敌人等级与等阶")]
+    [SerializeField] private EnemyKind kind = EnemyKind.骷髅敌人;
+    [SerializeField] private bool useManagerSettings = true;
+    [SerializeField, Min(1)] private int level = 1;
+    [SerializeField] private EnemyRank rank = EnemyRank.普通敌人;
 
     [Range(0, 1f)]
     [SerializeField] private float percantageModifier = .4f;
+
+    public EnemyKind Kind => kind;
+    public bool UseManagerSettings => useManagerSettings;
+    public int Level => Mathf.Max(1, level);
+    public EnemyRank Rank => rank;
+
     protected override void Start()
     {
+        ApplyManagedLevelSettings();
         ApplyLevelModifiers();
 
         base.Start();
 
         enemy = GetComponent<Enemy>();
         myDropSystem = GetComponent<ItemDrop>();
+        emberDropSystem = GetComponent<EnemyEmberDrop>();
 
+        if (emberDropSystem == null)
+            emberDropSystem = gameObject.AddComponent<EnemyEmberDrop>();
+    }
+
+    public void ApplyManagedLevelSettings()
+    {
+        if (!useManagerSettings)
+            return;
+
+        EnemyLevelManager.GetOrCreate().ApplySettingsTo(this);
+    }
+
+    public void SetManagedLevelAndRank(int managedLevel, EnemyRank managedRank)
+    {
+        level = Mathf.Max(1, managedLevel);
+        rank = managedRank;
     }
 
     private void ApplyLevelModifiers()
@@ -41,7 +69,10 @@ public class EnemyStats : CharacterStats
 
     private void Modify(Stat _stat)
     {
-        for (int i = 1; i < level; i++)
+        if (_stat == null)
+            return;
+
+        for (int i = 1; i < Level; i++)
         {
             float modifier = _stat.GetValue() * percantageModifier;
 
@@ -58,8 +89,9 @@ public class EnemyStats : CharacterStats
     {
         base.Die();
 
-        enemy.Die();
+        enemy?.Die();
 
-        myDropSystem.GenerateDrop();
+        myDropSystem?.GenerateDrop();
+        emberDropSystem?.DropEmbers(this);
     }
 }

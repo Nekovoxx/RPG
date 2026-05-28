@@ -11,18 +11,44 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
     protected UI ui;
     public InventoryItem item;
 
+    protected virtual void Awake()
+    {
+        EnsureSlotReferences();
+    }
+
     protected virtual void Start()
     {
         ui = GetComponentInParent<UI>();
     }
+
+    protected void EnsureSlotReferences()
+    {
+        if (itemImage == null)
+            itemImage = GetComponentInChildren<Image>(true);
+
+        if (itemText == null)
+            itemText = GetComponentInChildren<TextMeshProUGUI>(true);
+    }
+
     public void UpdateSlot(InventoryItem _newitem)
     {
+        EnsureSlotReferences();
         item = _newitem;
 
-        itemImage.color = Color.white;
-        if (item != null)
+        if (item == null || item.data == null)
         {
+            CleanUpSlot();
+            return;
+        }
+
+        if (itemImage != null)
+        {
+            itemImage.color = Color.white;
             itemImage.sprite = item.data.itemicon;
+        }
+
+        if (itemText != null)
+        {
             if (item.stackSize > 1)
             {
                 itemText.text = item.stackSize.ToString();
@@ -36,17 +62,22 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
 
     public void CleanUpSlot()
     {
+        EnsureSlotReferences();
         item = null;
 
-        itemImage.sprite = null;
-        itemImage.color = Color.clear;
+        if (itemImage != null)
+        {
+            itemImage.sprite = null;
+            itemImage.color = Color.clear;
+        }
 
-        itemText.text = ""; 
+        if (itemText != null)
+            itemText.text = ""; 
     }
 
     public virtual  void OnPointerDown(PointerEventData eventData)
     {
-        if (item == null)
+        if (item == null || item.data == null || Inventory.instance == null)
             return;
 
         if(Input.GetKey(KeyCode.LeftControl))
@@ -56,7 +87,7 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
             return;
         }
 
-        if (item.data.itemType == ItemType.Equipment)
+        if (item.data.itemType == ItemType.Equipment && item.data is ItemData_Equipment)
             Inventory.instance.EquipItem(item.data);
 
         ui?.itemTooltip?.HideTooltip();

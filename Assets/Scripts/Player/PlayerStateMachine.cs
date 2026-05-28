@@ -1,6 +1,4 @@
-using UnityEngine;
-
-public class PlayerStateMachine : MonoBehaviour
+public class PlayerStateMachine
 {
     public PlayerState currentState { get; private set; }
 

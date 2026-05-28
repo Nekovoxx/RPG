@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,6 +9,8 @@ public class Stat
     [InspectorName("加成列表")]
     public List<int> modifiers;
 
+    public int BaseValue => baseValue;
+
     public int GetValue()
     {
         int finalValue = baseValue;
@@ -18,9 +19,8 @@ public class Stat
             modifiers = new List<int>();
 
         foreach (int modifier in modifiers)
-        {
             finalValue += modifier;
-        }
+
         return finalValue;
     }
 
@@ -28,6 +28,12 @@ public class Stat
     {
         baseValue = _value;
     }
+
+    public void AddBaseValue(int _value)
+    {
+        baseValue += _value;
+    }
+
     public void AddModifier(int _modifier)
     {
         if (modifiers == null)
@@ -43,5 +49,4 @@ public class Stat
 
         modifiers.Remove(_modifier);
     }
-
 }

@@ -111,6 +111,16 @@ public class TilemapInstantDeathHazard : MonoBehaviour
         return IsLethalTile(tile);
     }
 
+    public bool IsLethalAtWorldPosition(Vector2 worldPosition)
+    {
+        return killEveryTile || IsLethalAtWorld(worldPosition);
+    }
+
+    public bool OverlapsLethalTileBounds(Bounds bounds)
+    {
+        return killEveryTile || OverlapsLethalTile(bounds);
+    }
+
     private bool IsLethalTile(TileBase tile)
     {
         if (tile == null)

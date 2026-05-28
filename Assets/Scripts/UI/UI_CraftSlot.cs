@@ -12,25 +12,34 @@ public class UI_CraftSlot : UI_ItemSlot
         if(_data == null)
             return;
 
-        item.data = _data;
+        EnsureSlotReferences();
+        item = new InventoryItem(_data);
 
-        itemImage.sprite = _data.itemicon;
-        itemText.text = _data.itemName;
+        if (itemImage != null)
+            itemImage.sprite = _data.itemicon;
 
-        if(itemText.text.Length >12)
-            itemText.fontSize = itemText.fontSize*0.7f;
-        else
-            itemText.fontSize = 24;
+        if (itemText != null)
+        {
+            itemText.text = _data.itemName;
+
+            if(itemText.text.Length >12)
+                itemText.fontSize = itemText.fontSize*0.7f;
+            else
+                itemText.fontSize = 24;
+        }
     }
 
     public override void OnPointerDown(PointerEventData eventData)
     {
-        ItemData_Equipment craftData = item.data as ItemData_Equipment;
+        ItemData_Equipment craftData = item != null ? item.data as ItemData_Equipment : null;
+
+        if (craftData == null || Inventory.instance == null)
+            return;
 
         Inventory.instance.CanCraft(craftData, craftData.craftingMaterials);
 
-        ui.craftWindow.SetupCraftWindow(item.data as ItemData_Equipment);
-
+        if (ui != null && ui.craftWindow != null)
+            ui.craftWindow.SetupCraftWindow(craftData);
 
 
     }

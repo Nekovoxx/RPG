@@ -14,22 +14,48 @@
         [SerializeField] private Color[] igniteColor;
         [SerializeField] private Color[] chillColor;
         [SerializeField] private Color[] shockColor;
+        private void Awake()
+        {
+            CacheRenderer();
+        }
+
         private void Start()
         {
+            CacheRenderer();
+        }
+
+        private void CacheRenderer()
+        {
+            if (sr != null)
+                return;
+
             sr = GetComponentInChildren<SpriteRenderer>();
-            originalMat = sr.material;
+
+            if (sr != null)
+                originalMat = sr.material;
         }
 
         public IEnumerator FlashFX()
         {
-            sr.material = hitMat;
+            CacheRenderer();
+
+            if (sr == null)
+                yield break;
+
+            originalMat = sr.material;
+
+            if (hitMat != null)
+                sr.material = hitMat;
+
             Color currentColor = sr.color;
             sr.color = Color.white;
 
             yield return new WaitForSeconds(flashDuration);
 
             sr.color = currentColor;
-            sr.material = originalMat;
+
+            if (originalMat != null)
+                sr.material = originalMat;
         }
 
 

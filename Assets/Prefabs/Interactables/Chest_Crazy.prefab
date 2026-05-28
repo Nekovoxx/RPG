@@ -29,7 +29,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.74, y: 0.74, z: 0.74}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 6958574051300501322}
@@ -147,11 +147,6 @@ MonoBehaviour:
   interactionPrompt: "\u6309 E \u5F00\u542F"
   canInteract: 1
   promptText: {fileID: 5425705913788005084}
-  showPrompt: 1
-  promptOffset: {x: 0, y: 2.2, z: 0}
-  promptFontSize: 0.35
-  promptColor: {r: 1, g: 1, b: 1, a: 1}
-  promptSortingOrder: 100
   spriteRenderer: {fileID: 100002}
   openAnimationFrames:
   - {fileID: 21300000, guid: 4b27d2420dbf0c34982abf62b952d1b2, type: 3}

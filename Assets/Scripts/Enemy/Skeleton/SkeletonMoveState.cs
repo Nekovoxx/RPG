@@ -7,6 +7,7 @@ public class SkeletonMoveState : SkeletonGroundedState
     public override void Enter()
     {
         base.Enter();
+        enemy.ResetPatrolNavigationMemory();
     }
 
     public override void Exit()
@@ -18,12 +19,16 @@ public class SkeletonMoveState : SkeletonGroundedState
     {
         base.Update();
 
-        enemy.SetVelocity(enemy.moveSpeed * enemy.facingDir, rb.velocity.y);
-        if (enemy.IsWallDetected() || !enemy.IsGroundDetected())
+        if (stateMachine.currentState != this)
+            return;
+
+        if (enemy.TryTurnAroundForPatrol())
         {
-            enemy.Flip();
             stateMachine.ChangeState(enemy.idleState);
+            return;
         }
+
+        enemy.SetVelocity(enemy.moveSpeed * enemy.facingDir, rb.velocity.y);
 
         
     }

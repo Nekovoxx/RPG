@@ -1,9 +1,12 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
+
 public class UI_InGame : MonoBehaviour
 {
     [SerializeField] private PlayerStats playerStats;
     [SerializeField] private Slider slider;
+    [SerializeField] private TMP_Text emberText;
 
     [SerializeField] private Image dashImage;
     [SerializeField] private Image swordImage;
@@ -15,6 +18,8 @@ public class UI_InGame : MonoBehaviour
     [SerializeField] private Image parryImage;
 
     private SkillManager skills;
+    private PlayerEmberWallet emberWallet;
+
     void Start()
     {
         if (playerStats != null)
@@ -23,6 +28,8 @@ public class UI_InGame : MonoBehaviour
         skills = SkillManager.instance;
         BindCooldownImages();
         InitializeCooldownImages();
+        BindEmberText();
+        BindEmberWallet();
     }
 
     void Update()
@@ -39,6 +46,12 @@ public class UI_InGame : MonoBehaviour
         CheakCooldownOf(awakeningImage, skills.awakening);
         CheakCooldownOf(invisibilityImage, skills.invisibility);
         CheakCooldownOf(flaskImage, Inventory.instance != null ? Inventory.instance.flaskCooldown : 0);
+    }
+
+    private void OnDestroy()
+    {
+        if (emberWallet != null)
+            emberWallet.OnEmbersChanged -= HandleEmbersChanged;
     }
 
     private void UpdateHealthUI()
@@ -72,6 +85,64 @@ public class UI_InGame : MonoBehaviour
         invisibilityImage = FindCooldownImage(invisibilityImage,
             new[] { "InvisibilityCooldown", "InvisibleCooldown", "StealthCooldown", "Hide_UI", "\u9690\u8EAB\u51B7\u5374" },
             new[] { "invisibility", "invisible", "stealth", "hide", "\u9690\u8EAB" });
+    }
+
+    private void BindEmberText()
+    {
+        if (emberText != null)
+            return;
+
+        Transform emberRoot = FindTransformByName(transform, "yujin_UI");
+
+        if (emberRoot == null)
+            emberRoot = FindTransformByName(transform, "\u4F59\u70EC_UI");
+
+        if (emberRoot != null)
+            emberText = emberRoot.GetComponentInChildren<TMP_Text>(true);
+
+        if (emberText != null)
+            RefreshEmberText();
+    }
+
+    private void BindEmberWallet()
+    {
+        PlayerEmberWallet wallet = PlayerEmberWallet.GetOrCreate();
+
+        if (emberWallet == wallet)
+        {
+            RefreshEmberText();
+            return;
+        }
+
+        if (emberWallet != null)
+            emberWallet.OnEmbersChanged -= HandleEmbersChanged;
+
+        emberWallet = wallet;
+
+        if (emberWallet != null)
+        {
+            emberWallet.OnEmbersChanged += HandleEmbersChanged;
+            emberWallet.Load();
+        }
+
+        RefreshEmberText();
+    }
+
+    private void HandleEmbersChanged(int currentEmbers)
+    {
+        if (emberText == null)
+            BindEmberText();
+
+        if (emberText != null)
+            emberText.text = currentEmbers.ToString();
+    }
+
+    private void RefreshEmberText()
+    {
+        if (emberText == null)
+            return;
+
+        emberText.text = emberWallet != null ? emberWallet.CurrentEmbers.ToString() : "0";
     }
 
     private void InitializeCooldownImages()

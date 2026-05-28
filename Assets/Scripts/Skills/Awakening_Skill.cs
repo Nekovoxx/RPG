@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Awakening_Skill : Skill
 {
@@ -14,6 +15,16 @@ public class Awakening_Skill : Skill
     [SerializeField] private Color auraInnerGold = new Color(1f, 0.9f, 0.25f, 1f);
     [SerializeField] private Color auraOuterGold = new Color(1f, 0.55f, 0.06f, 0.9f);
 
+    [Header("Rune Burst")]
+    [SerializeField] private Image runeImage;
+    [SerializeField] private Sprite runeSprite;
+    [SerializeField, Min(0.05f)] private float runeBurstDuration = 0.55f;
+    [SerializeField, Min(0.01f)] private float runeStartScale = 0.15f;
+    [SerializeField, Min(0.01f)] private float runeEndScale = 1.35f;
+    [SerializeField, Range(0f, 1f)] private float runeMaxAlpha = 0.55f;
+    [SerializeField] private Color runeColor = new Color(1f, 0.18f, 0.08f, 0.55f);
+    [SerializeField, Min(1f)] private float runeScreenSize = 520f;
+
     [Header("Awakened Finisher")]
     [SerializeField, Min(0f)] private float finisherMotionStartTime = 0.16f;
     [SerializeField, Min(0.05f)] private float finisherMotionDuration = 0.68f;
@@ -21,6 +32,7 @@ public class Awakening_Skill : Skill
 
     private readonly List<AppliedStatModifier> appliedModifiers = new List<AppliedStatModifier>();
     private Coroutine awakeningRoutine;
+    private Coroutine runeBurstRoutine;
     private AwakeningAuraEffect activeAura;
 
     public bool IsAwakened { get; private set; }
@@ -47,6 +59,10 @@ public class Awakening_Skill : Skill
 
         if (cooldown <= 0)
             cooldown = 25f;
+
+        ResolveRuneSprite();
+        ResolveRuneImage();
+        HideRuneImage();
     }
 
     public bool TryActivate()
@@ -93,6 +109,7 @@ public class Awakening_Skill : Skill
 
         ApplyStatBonuses();
         SpawnAura();
+        PlayRuneBurst();
     }
 
     private void EndAwakening()
@@ -196,6 +213,71 @@ public class Awakening_Skill : Skill
         activeAura = null;
     }
 
+    private void PlayRuneBurst()
+    {
+        ResolveRuneSprite();
+        ResolveRuneImage();
+
+        if (runeImage == null || runeSprite == null)
+            return;
+
+        if (runeBurstRoutine != null)
+            StopCoroutine(runeBurstRoutine);
+
+        runeBurstRoutine = StartCoroutine(RuneBurstRoutine());
+    }
+
+    private IEnumerator RuneBurstRoutine()
+    {
+        RectTransform rectTransform = runeImage.rectTransform;
+
+        runeImage.gameObject.SetActive(true);
+        runeImage.transform.SetAsLastSibling();
+        runeImage.sprite = runeSprite;
+        runeImage.preserveAspect = true;
+        runeImage.raycastTarget = false;
+        runeImage.color = WithAlpha(runeColor, 0f);
+
+        if (rectTransform != null)
+        {
+            rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+            rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            rectTransform.anchoredPosition = Vector2.zero;
+            rectTransform.sizeDelta = Vector2.one * runeScreenSize;
+            rectTransform.localScale = Vector3.one * runeStartScale;
+        }
+
+        yield return AnimateRuneBurst(
+            scale => rectTransform.localScale = Vector3.one * scale,
+            alpha => runeImage.color = WithAlpha(runeColor, alpha));
+
+        runeImage.color = WithAlpha(runeColor, 0f);
+        HideRuneImage();
+        runeBurstRoutine = null;
+    }
+
+    private IEnumerator AnimateRuneBurst(System.Action<float> applyScale, System.Action<float> applyAlpha)
+    {
+        float elapsed = 0f;
+        float durationValue = Mathf.Max(0.05f, runeBurstDuration);
+
+        while (elapsed < durationValue)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float normalizedTime = Mathf.Clamp01(elapsed / durationValue);
+            float easedScale = EaseOutBack(normalizedTime);
+            float alpha = Mathf.Sin(normalizedTime * Mathf.PI) * runeMaxAlpha;
+
+            applyScale?.Invoke(Mathf.Lerp(runeStartScale, runeEndScale, easedScale));
+            applyAlpha?.Invoke(alpha);
+
+            yield return null;
+        }
+
+        applyAlpha?.Invoke(0f);
+    }
+
     private void EnsurePlayerReference()
     {
         if (player != null)
@@ -217,5 +299,75 @@ public class Awakening_Skill : Skill
             return player.sr;
 
         return player.GetComponentInChildren<SpriteRenderer>();
+    }
+
+    private static Color WithAlpha(Color color, float alpha)
+    {
+        color.a = alpha;
+        return color;
+    }
+
+    private static float EaseOutBack(float value)
+    {
+        const float overshoot = 1.70158f;
+        float t = value - 1f;
+        return 1f + (overshoot + 1f) * t * t * t + overshoot * t * t;
+    }
+
+    private void ResolveRuneSprite()
+    {
+        if (runeSprite != null)
+            return;
+
+#if UNITY_EDITOR
+        runeSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Graphics/VFX/fuwen.png");
+#endif
+    }
+
+    private void ResolveRuneImage()
+    {
+        if (runeImage != null)
+            return;
+
+        Image[] images = FindObjectsOfType<Image>(true);
+
+        for (int i = 0; i < images.Length; i++)
+        {
+            Image image = images[i];
+
+            if (image == null || image.gameObject == null)
+                continue;
+
+            string normalizedName = image.gameObject.name.Replace(" ", "").Replace("_", "").Replace("-", "").ToLowerInvariant();
+
+            if (normalizedName.Contains("awakeningrune") || normalizedName.Contains("fuwen") || normalizedName.Contains("\u89c9\u9192\u7b26\u6587"))
+            {
+                runeImage = image;
+                break;
+            }
+        }
+
+        if (runeImage == null)
+            return;
+
+        HideRuneImage();
+    }
+
+    private void HideRuneImage()
+    {
+        if (runeImage == null)
+            return;
+
+        runeImage.color = WithAlpha(runeColor, 0f);
+        runeImage.gameObject.SetActive(false);
+    }
+
+    private void OnValidate()
+    {
+        runeBurstDuration = Mathf.Max(0.05f, runeBurstDuration);
+        runeStartScale = Mathf.Max(0.01f, runeStartScale);
+        runeEndScale = Mathf.Max(runeStartScale, runeEndScale);
+        runeColor.a = runeMaxAlpha;
+        ResolveRuneSprite();
     }
 }

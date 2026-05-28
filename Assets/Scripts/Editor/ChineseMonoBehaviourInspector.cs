@@ -50,7 +50,6 @@ public class ChineseMonoBehaviourInspector : Editor
         { "verticalParallaxEffect", "纵向跟随比例" },
         { "followVerticalMovement", "跟随纵向移动" },
         { "loopHorizontally", "横向循环" },
-        { "interactionPrompt", "交互提示" },
         { "keyText", "按键文本" },
         { "promptText", "提示文本" },
         { "worldOffset", "世界偏移" },
@@ -204,6 +203,25 @@ public class ChineseMonoBehaviourInspector : Editor
         { "startingAmount", "初始数量" },
         { "emberData", "余烬数据" },
         { "currentEmbers", "当前余烬" },
+
+        { "defaultLevel", "默认等级" },
+        { "defaultRank", "默认等阶" },
+        { "applyToExistingEnemiesOnAwake", "启动时应用到场景敌人" },
+        { "enemyLevelRules", "敌人等级规则" },
+        { "rankEmberRewards", "等阶余烬掉落" },
+        { "kind", "敌人种类" },
+        { "level", "等级" },
+        { "rank", "等阶" },
+        { "useManagerSettings", "使用管理器配置" },
+        { "percantageModifier", "每级属性成长比例" },
+        { "baseReward", "基础余烬" },
+        { "rewardPerLevel", "每级增加余烬" },
+        { "rankMultiplier", "等阶倍率" },
+        { "useManagerFormula", "使用管理器公式" },
+        { "fixedReward", "固定余烬" },
+        { "randomBonusMax", "随机额外余烬上限" },
+        { "rewardMultiplier", "掉落倍率" },
+        { "logReward", "输出掉落日志" },
     };
 
     private static readonly Dictionary<string, string> WordLabels = new Dictionary<string, string>

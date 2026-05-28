@@ -34,6 +34,12 @@ public class UI : MonoBehaviour
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            CloseActiveMenuWithEscape();
+            return;
+        }
+
         if (Input.GetKeyDown(KeyCode.Tab))
         {
             SwitchWithKeyTo(characterUI);
@@ -52,6 +58,28 @@ public class UI : MonoBehaviour
         }
 
         RefreshGamePauseState();
+    }
+
+    public bool CloseActiveMenuWithEscape()
+    {
+        bool closedAnyMenu = false;
+
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            GameObject child = transform.GetChild(i).gameObject;
+
+            if (child == null || child == inGameUI || !child.activeSelf)
+                continue;
+
+            child.SetActive(false);
+            closedAnyMenu = true;
+        }
+
+        if (closedAnyMenu)
+            CheakForInGameUI();
+
+        RefreshGamePauseState();
+        return closedAnyMenu;
     }
 
     public void SwtichTo(GameObject _menu)
@@ -98,6 +126,13 @@ public class UI : MonoBehaviour
         }
 
         SwtichTo(levelUpUI);
+
+        UI_LevelUpPanel levelUpPanel = levelUpUI.GetComponent<UI_LevelUpPanel>();
+
+        if (levelUpPanel == null)
+            levelUpPanel = levelUpUI.AddComponent<UI_LevelUpPanel>();
+
+        levelUpPanel.Open();
     }
 
     private void ResolveMenuReferences()
